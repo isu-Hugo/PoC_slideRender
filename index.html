@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="modern-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SlideEngine - Motor Pedagógico de Slides com IA</title>
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Barra de Ferramentas Superior -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-badge">
+        <span class="logo-icon">⚡</span>
+        <span>SlideEngine</span>
+      </div>
+      <div class="presentation-title-text" id="presentationTitle" title="Carregando...">
+        Carregando apresentação...
+      </div>
+    </div>
+
+    <div class="header-right">
+      <!-- Seletor de Tema -->
+      <select class="theme-select" id="themeSelect" title="Mudar tema visual">
+        <option value="modern-dark">🌙 Dark Moderno</option>
+        <option value="academic-light">☀️ Claro Acadêmico</option>
+        <option value="emerald">🌿 Verde Esmeralda</option>
+        <option value="cyberpunk">🔮 Cyberpunk</option>
+      </select>
+
+      <!-- Botão para o Professor criar com IA -->
+      <button class="btn" id="teacherPromptBtn" title="Ver prompt para o professor gerar novos slides">
+        <span>👨‍🏫</span>
+        <span>Gerar com IA</span>
+      </button>
+
+      <!-- Botão para o Aluno estudar com IA -->
+      <button class="btn btn-primary" id="studyAiBtn" title="Exportar dados para IA gerar testes e flashcards">
+        <span>🤖</span>
+        <span>Estudar com IA</span>
+      </button>
+
+      <!-- Botão Importar / Baixar JSON -->
+      <button class="btn" id="importBtn" title="Carregar outro JSON de aula">
+        <span>📂</span>
+        <span>Importar</span>
+      </button>
+
+      <button class="btn btn-icon-only" id="downloadJsonBtn" title="Baixar JSON desta apresentação">
+        <span>💾</span>
+      </button>
+
+      <!-- Botão Notas do Orador / Estudo -->
+      <button class="btn btn-icon-only" id="notesBtn" title="Abrir notas da aula (N)">
+        <span>📝</span>
+      </button>
+
+      <!-- Botão Tela Cheia -->
+      <button class="btn btn-icon-only" id="fullscreenBtn" title="Modo Apresentação / Tela Cheia (F)">
+        <span>⛶</span>
+      </button>
+
+      <!-- Botão Ajuda / Atalhos -->
+      <button class="btn btn-icon-only" id="helpBtn" title="Atalhos e Instruções (?)">
+        <span>❓</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Palco Central do Slide (16:9) -->
+  <main class="stage-container">
+    <div class="slide-viewport" id="slideViewport">
+      <!-- O conteúdo do slide será injetado dinamicamente aqui -->
+    </div>
+  </main>
+
+  <!-- Barra de Navegação Inferior -->
+  <footer class="navigation-bar">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="nav-controls-left">
+      <button class="btn" id="prevSlideBtn">
+        <span>◀</span> Anterior
+      </button>
+    </div>
+
+    <div class="nav-controls-center">
+      <span class="slide-counter" id="slideCounter">1 / 1</span>
+    </div>
+
+    <div class="nav-controls-right">
+      <button class="btn" id="nextSlideBtn">
+        Próximo <span>▶</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Drawer Lateral: Notas do Orador / Estudo -->
+  <aside class="speaker-notes-drawer" id="speakerNotesDrawer">
+    <div class="notes-header">
+      <h3><span>📝</span> Notas do Professor</h3>
+      <button class="btn btn-icon-only" id="closeNotesBtn">✕</button>
+    </div>
+    <div class="notes-body" id="speakerNotesBody">
+      <em>Carregando notas...</em>
+    </div>
+  </aside>
+
+  <!-- Modal: Estudar com IA (Para o Aluno) -->
+  <div class="modal-overlay" id="exportStudyModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><span>🤖</span> Estudar esta Aula com IA</h3>
+        <button class="btn btn-icon-only modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: var(--text-muted);">
+          Escolha o tipo de material que você quer que o <strong>Gemini</strong>, <strong>ChatGPT</strong> ou <strong>Claude</strong> crie para você a partir desta aula:
+        </p>
+
+        <div class="study-options-grid">
+          <div class="study-option-card active" data-mode="simulado">
+            <h4>📝 Simulado com 5 Questões</h4>
+            <p>Gera teste de múltipla escolha com gabarito comentado no final.</p>
+          </div>
+          <div class="study-option-card" data-mode="flashcards">
+            <h4>🗂️ Flashcards de Fixação</h4>
+            <p>Perguntas e respostas diretas para repetição espaçada e memorização.</p>
+          </div>
+          <div class="study-option-card" data-mode="resumo">
+            <h4>🧠 Resumo & Mapa Conceitual</h4>
+            <p>Síntese dos tópicos principais, armadilhas comuns e visão geral.</p>
+          </div>
+          <div class="study-option-card" data-mode="socratico">
+            <h4>🎓 Diálogo Socrático</h4>
+            <p>A IA vira seu tutor particular e faz perguntas passo a passo.</p>
+          </div>
+        </div>
+
+        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-dim); margin-top: 0.5rem;">
+          Prompt Pronto para Copiar:
+        </label>
+        <textarea class="modal-textarea" id="studyPromptOutput" readonly></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn modal-close-btn">Fechar</button>
+        <button class="btn btn-primary" id="copyStudyPromptBtn">
+          <span>📋</span> Copiar Prompt para IA
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Importar JSON -->
+  <div class="modal-overlay" id="importModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><span>📂</span> Importar Apresentação em JSON</h3>
+        <button class="btn btn-icon-only modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: var(--text-muted);">
+          Você pode subir um arquivo <code>.json</code> gerado previamente ou colar o código JSON diretamente no campo abaixo:
+        </p>
+
+        <div style="margin-bottom: 0.5rem;">
+          <input type="file" id="jsonFileInput" accept=".json" style="font-size: 0.85rem; color: var(--text-muted);">
+        </div>
+
+        <textarea class="modal-textarea" id="jsonInputArea" placeholder="Cole o código JSON da aula aqui..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="loadFullExampleBtn" title="Carregar exemplo completo com todos os 6 layouts e campos">🚀 Exemplo Completo (6 Slides)</button>
+        <button class="btn" id="loadSampleBtn">🔄 Resetar</button>
+        <button class="btn modal-close-btn">Cancelar</button>
+        <button class="btn btn-primary" id="confirmImportBtn">
+          <span>✔</span> Carregar Apresentação
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Prompt para o Professor (Criar novos slides) -->
+  <div class="modal-overlay" id="teacherPromptModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><span>👨‍🏫</span> Como o Professor Gera os Slides</h3>
+        <button class="btn btn-icon-only modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: var(--text-muted);">
+          Copie o prompt de sistema abaixo, cole no <strong>Google Gemini</strong>, <strong>ChatGPT</strong> ou <strong>Claude</strong> e adicione o tema ou texto da sua aula. A IA retornará o JSON pronto para o SlideEngine!
+        </p>
+        <textarea class="modal-textarea" id="teacherPromptArea" readonly>Você é um designer instrucional e especialista pedagógico.
+Transforme o tema abaixo em uma apresentação estruturada no formato JSON para o SlideEngine.
+
+REGRAS:
+1. Responda ESTRITAMENTE com o JSON válido, sem texto introdutório.
+2. Varie os layouts entre: "title", "bullets", "split", "code", "quiz", "quote".
+3. Inclua "speakerNotes" detalhadas em cada slide para estudo do aluno.
+4. Para slides de "quiz", defina "options" (4 itens), "answerIndex" (índice da correta) e "explanation".
+
+FORMATO DO JSON:
+{
+  "meta": { "title": "Título", "author": "Professor", "course": "Disciplina", "theme": "modern-dark" },
+  "slides": [
+    { "id": 1, "layout": "title", "badge": "Módulo 1", "title": "Tema Principal", "subtitle": "Subtítulo", "speakerNotes": "Notas..." },
+    { "id": 2, "layout": "bullets", "title": "Pontos Chave", "items": ["Ponto 1", "Ponto 2"], "speakerNotes": "Notas..." },
+    { "id": 3, "layout": "split", "title": "Comparativo", "left": { "title": "A", "points": ["..."] }, "right": { "title": "B", "points": ["..."] }, "speakerNotes": "Notas..." },
+    { "id": 4, "layout": "quiz", "question": "Pergunta?", "options": ["A", "B", "C", "D"], "answerIndex": 0, "explanation": "Por que está certa...", "speakerNotes": "Notas..." }
+  ]
+}
+
+TEMA OU CONTEÚDO DA AULA:
+[Cole seu tema ou texto aqui]</textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn modal-close-btn">Fechar</button>
+        <button class="btn btn-primary" id="copyTeacherPromptBtn">
+          <span>📋</span> Copiar Prompt do Professor
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Atalhos e Ajuda -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><span>❓</span> Atalhos e Navegação</h3>
+        <button class="btn btn-icon-only modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.9rem;">
+          <div style="padding: 0.5rem; background: var(--bg-card); border-radius: 8px;">
+            <strong>➡ / Espaço / Enter:</strong> Próximo slide
+          </div>
+          <div style="padding: 0.5rem; background: var(--bg-card); border-radius: 8px;">
+            <strong>⬅ / Backspace:</strong> Slide anterior
+          </div>
+          <div style="padding: 0.5rem; background: var(--bg-card); border-radius: 8px;">
+            <strong>Home:</strong> Primeiro slide
+          </div>
+          <div style="padding: 0.5rem; background: var(--bg-card); border-radius: 8px;">
+            <strong>End:</strong> Último slide
+          </div>
+          <div style="padding: 0.5rem; background: var(--bg-card); border-radius: 8px;">
+            <strong>F:</strong> Alternar Tela Cheia
+          </div>
+          <div style="padding: 0.5rem; background: var(--bg-card); border-radius: 8px;">
+            <strong>N:</strong> Mostrar/Ocultar Notas do Professor
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary modal-close-btn">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Container de Toasts -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="js/renderer.js"></script>
+  <script src="js/study-export.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

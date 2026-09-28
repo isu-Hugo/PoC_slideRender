@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "title": "IA na Educação: Do Slide ao Estudo Ativo",
+    "author": "Prof. Dr. Roberto Mendes",
+    "course": "Inovação Pedagógica & Tecnologia",
+    "theme": "modern-dark",
+    "date": "2026-09-27"
+  },
+  "slides": [
+    {
+      "id": 1,
+      "layout": "title",
+      "badge": "Aula Inaugural",
+      "title": "IA na Educação: Do Slide ao Estudo Ativo",
+      "subtitle": "Como transformar apresentações estáticas em motores interativos de aprendizagem personalizada",
+      "speakerNotes": "Boas-vindas a todos! Esta aula inaugura o uso da nossa plataforma de slides baseada em JSON. Explique que o material pode ser baixado e estudado diretamente com auxílio de IA."
+    },
+    {
+      "id": 2,
+      "layout": "bullets",
+      "title": "Objetivos da Apresentação",
+      "subtitle": "O que você aprenderá neste módulo:",
+      "items": [
+        "Compreender a diferença entre consumo passivo e estudo ativo mediado por IA",
+        "Aprender a estruturar conteúdos pedagógicos em formato JSON padronizado",
+        "Utilizar o ciclo bidirecional: Professor ➔ Motor de Slides ➔ Aluno ➔ IA Tutora",
+        "Praticar a geração de simulados, resumos e flashcards com 1 clique"
+      ],
+      "speakerNotes": "Destaque que o foco não é apenas 'assistir a aula', mas interagir e levar os dados para uma IA continuar sendo o tutor particular do aluno."
+    },
+    {
+      "id": 3,
+      "layout": "split",
+      "title": "Abordagem Tradicional vs Abordagem Ativa com JSON",
+      "left": {
+        "title": "📄 Slides Tradicionais (PDF / PPTX)",
+        "tag": "Passivo & Rígido",
+        "points": [
+          "Formatos proprietários e difíceis de editar dinamicamente",
+          "A IA alucina ao tentar ler diagramas e layouts complexos em PDF",
+          "O aluno consome passivamente sem personalização de ritmo",
+          "Dificuldade de reaproveitamento para gerar exercícios automatizados"
+        ]
+      },
+      "right": {
+        "title": "⚡ Motor de Slides JSON (SlideEngine)",
+        "tag": "Estruturado & Interativo",
+        "points": [
+          "100% interoperável: gerado e compreendido por qualquer LLM",
+          "Execução nativa no navegador sem necessidade de softwares pesados",
+          "Exportação instantânea para prompts de estudo e testes",
+          "Quizzes e códigos interativos direto na tela"
+        ]
+      },
+      "speakerNotes": "Foque no contraste: o PDF é um 'tijolo de texto e imagem', enquanto o JSON é dado estruturado vivo."
+    },
+    {
+      "id": 4,
+      "layout": "code",
+      "title": "Estrutura do Dado Pedagógico",
+      "subtitle": "Um exemplo simples de como uma questão interativa é declarada no JSON:",
+      "language": "json",
+      "code": "{\n  \"layout\": \"quiz\",\n  \"question\": \"Qual o principal benefício do formato JSON para IA?\",\n  \"options\": [\n    \"Aumentar o peso dos arquivos\",\n    \"Garantir saídas estruturadas e previsíveis via Schema\",\n    \"Exigir instalação de drivers gráficos\",\n    \"Impedir a personalização dos slides\"\n  ],\n  \"answerIndex\": 1,\n  \"explanation\": \"O formato JSON permite que as LLMs usem 'Structured Outputs', eliminando alucinações de formatação.\"\n}",
+      "explanation": "A IA do professor gera este bloco em milissegundos e o motor renderiza o componente interativo abaixo automaticamente!",
+      "speakerNotes": "Mostre aos alunos a simplicidade do JSON. Qualquer IA consegue gerar isso sem erros."
+    },
+    {
+      "id": 5,
+      "layout": "quiz",
+      "question": "Pergunta Rápida: Por que o uso de JSON facilita que o aluno estude com a IA depois da aula?",
+      "options": [
+        "Porque o JSON compacta os arquivos em formato ZIP criptografado",
+        "Porque é um formato estruturado que qualquer IA entende perfeitamente para criar flashcards e simulados",
+        "Porque o navegador bloqueia qualquer alteração sem autorização da nuvem",
+        "Porque elimina a necessidade de conexão com a internet permanentemente"
+      ],
+      "answerIndex": 1,
+      "explanation": "Exato! Como o JSON contém textos, conceitos e notas do orador semanticamente organizados, qualquer IA consegue gerar testes e explicações personalizadas em segundos.",
+      "speakerNotes": "Faça uma pausa de 1 minuto para os alunos responderem na tela."
+    },
+    {
+      "id": 6,
+      "layout": "quote",
+      "quote": "A tecnologia na educação não deve apenas substituir a lousa de giz por uma tela brilhante; deve capacitar o estudante a ser o coautor e investigador do próprio conhecimento.",
+      "author": "Princípio da Aprendizagem Ativa",
+      "role": "Metodologias Ágeis de Ensino",
+      "speakerNotes": "Fechamento conceitual. Chame a atenção para o botão 'Estudar com IA' no topo da tela."
+    },
+    {
+      "id": 7,
+      "layout": "title",
+      "badge": "Próximos Passos",
+      "title": "Agora é a sua vez!",
+      "subtitle": "Clique no botão '🤖 Estudar com IA' no menu superior para gerar seu primeiro simulado ou carregue seu próprio JSON.",
+      "speakerNotes": "Agradeça a turma e demonstre a exportação para o ChatGPT ou Gemini."
+    }
+  ]
+}

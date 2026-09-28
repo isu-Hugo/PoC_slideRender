@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "title": "Orientação a Objetos no Kernel Linux: Superando as Limitações da Linguagem C",
+    "author": "Especialista em Engenharia de Software e Sistemas Operacionais",
+    "course": "Arquitetura de Sistemas Operacionais e Linguagem C Avancada",
+    "theme": "modern-dark"
+  },
+  "slides": [
+    {
+      "id": 1,
+      "layout": "title",
+      "badge": "Módulo 1: Arquitetura de Software",
+      "title": "Orientação a Objetos no Kernel Linux",
+      "subtitle": "Como os desenvolvedores implementaram paradigmas de OO em C puro para construir o maior kernel do mundo",
+      "speakerNotes": "Bem-vindos a esta aula avançada de arquitetura do Kernel Linux. Hoje exploraremos um mito comum no desenvolvimento de software: a ideia de que é preciso uma linguagem nativamente orientada a objetos (como C++ ou Java) para construir sistemas orientados a objetos. Analisaremos como Linus Torvalds e a comunidade do Kernel venceram a barreira da sintaxe do C criando padrões de projeto de baixo nível, garantindo altíssima performance e mantendo uma abstração modular robusta."
+    },
+    {
+      "id": 2,
+      "layout": "bullets",
+      "title": "Por que C e não C++ no Kernel?",
+      "items": [
+        "Desempenho predizível: Sem runtime hidden, sem alocações implícitas de memória e sem chamadas ocultas a construtores/destrutores.",
+        "Controle total sobre o hardware: Garantia de alinhamento de memória e manipulação direta de ponteiros sem overhead de abstração da linguagem.",
+        "Portabilidade e compatibilidade de Compilador: C possui suporte universal e comportamento consistente com GCC e Clang.",
+        "Gerenciamento explícito de exceções: Tratamento de erros detalhado e direto ao ponto, evitando a complexidade das exceções do C++."
+      ],
+      "speakerNotes": "É fundamental entender as razões históricas e técnicas da escolha pelo C. Linus Torvalds sempre evitou o C++ no Kernel devido à falta de controle explícito sobre o que acontece em nível de instrução de montagem (assembly). Em um kernel, cada ciclo de clock e cada byte de pilha contam. O C++ introduz abstrações de alto nível que podem gerar um código compilado imprevisível em termos de alocação de memória e overhead de execução. A solução do Kernel foi adotar o paradigma OO mantendo o controle total da linguagem C."
+    },
+    {
+      "id": 3,
+      "layout": "split",
+      "title": "C NATIVO vs. C ORIENTADO A OBJETOS NO KERNEL",
+      "left": {
+        "title": "C Procedural Tradicional",
+        "points": [
+          "Funções globais operando diretamente em estruturas de dados expostas.",
+          "Forte acoplamento entre módulos de código.",
+          "Uso excessivo de instruções condicionais (switch/case) para tratar diferentes tipos de hardware/arquivos.",
+          "Dificuldade de extensão sem modificar o código-fonte existente."
+        ]
+      },
+      "right": {
+        "title": "C com Padrões Orientados a Objetos",
+        "points": [
+          "Encapsulamento de estado em structs com ocultação opcional de dados.",
+          "Polimorfismo alcançado através de tabelas de ponteiros de função (vtables).",
+          "Herança e composição por meio de structs aninhadas (embedding).",
+          "Desacoplamento total entre interfaces abstratas e implementações específicas."
+        ]
+      },
+      "speakerNotes": "Comparem os dois lados nesta tela. No paradigma procedural comum, para tratar diferentes sistemas de arquivos (como EXT4, FAT32 ou NTFS), teríamos que criar funções cheias de 'switch' ou 'if-else'. Se adicionássemos um novo sistema de arquivos, precisaríamos reescrever essas funções. No Kernel Linux, a abordagem orientada a objetos encapsula essas diferenças: a camada VFS (Virtual File System) estabelece a interface, e cada sistema de arquivos implementa sua própria tabela de operações. O código chamador nem precisa saber qual é o tipo do arquivo sob a superfície."
+    },
+    {
+      "id": 4,
+      "layout": "code",
+      "title": "Implementando Polimorfismo: O VFS e file_operations",
+      "code": "// Exemplo de estrutura de interface (vtable em C)\nstruct file_operations {\n    ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);\n    ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);\n    int (*open) (struct inode *, struct file *);\n    int (*release) (struct inode *, struct file *);\n};\n\n// Implementação específica para um dispositivo nulo (/dev/null)\nstatic const struct file_operations null_ops = {\n    .read    = read_null,\n    .write   = write_null,\n    .open    = open_null,\n    .release = release_null,\n};",
+      "speakerNotes": "Este trecho de código demonstra o coração do VFS (Virtual File System) do Linux. A `struct file_operations` funciona exatamente como uma classe abstrata ou interface em linguagens OO, ou o equivalente a uma 'vtable' (virtual method table) gerada pelo compilador C++. Onde lê-se `ssize_t (*read)`, temos um ponteiro para uma função. Ao definir `null_ops`, instanciamos os ponteiros para que apontem para as rotinas concretas de leitura/escrita do dispositivo `/dev/null`. Quando você chama a system call `read()`, o kernel apenas executa `file->f_op->read(...)` sem precisar saber qual é o driver por trás do arquivo."
+    },
+    {
+      "id": 5,
+      "layout": "code",
+      "title": "Herança e Composição via Struct Embedding e container_of",
+      "code": "// Struct 'Pai' / Base\nstruct device {\n    const char *name;\n    struct device_driver *driver;\n};\n\n// Struct 'Filha' contendo a Base\nstruct my_custom_dev {\n    int custom_data;\n    struct device dev; // Embed da struct base\n};\n\n// Recuperando o ponteiro do objeto 'Pai' a partir do 'Filho'\n#define container_of(ptr, type, member) ({ \\n    const typeof( ((type *)0)->member ) *__mptr = (ptr); \\n    (type *)( (char *)__mptr - offsetof(type,member) );})",
+      "speakerNotes": "Para implementar herança em C, o Linux utiliza 'Struct Embedding' (aninhamento de estruturas) em conjunto com a lendária macro `container_of`. Ao colocar uma `struct device` dentro de uma `struct my_custom_dev`, nós simulamos a herança. Quando o subsistema genérico de dispositivos do Kernel repassa um ponteiro de `struct device *dev`, a macro `container_of` calcula o deslocamento em bytes (offset) do membro e retorna o ponteiro original da estrutura `my_custom_dev`. Isso nos permite recuperar o 'objeto completo' de forma rápida, eficiente e totalmente segura do ponto de vista de memória."
+    },
+    {
+      "id": 6,
+      "layout": "quote",
+      "quote": "C++ não resolve nenhum dos problemas do Kernel, mas cria novos. O ecossistema de C e seu controle absoluto sobre o que o compilador faz são indispensáveis.",
+      "author": "Linus Torvalds",
+      "speakerNotes": "Esta citação resume perfeitamente a filosofia do Kernel Linux. A Orientação a Objetos é um paradigma de design de software, uma forma de pensar e organizar responsabilidades e fluxos de dados. Ela não é exclusividade de linguagens sintaticamente voltadas a objetos. O Kernel do Linux prova que é possível ter o melhor dos dois mundos: o rigor e o design modular da OO combinado com a velocidade e previsibilidade bruta da linguagem C."
+    },
+    {
+      "id": 7,
+      "layout": "quiz",
+      "question": "Como o Kernel Linux alcança o Polimorfismo na camada de VFS (Virtual File System) em linguagem C?",
+      "options": [
+        "Através do uso de Herança Múltipla com a palavra-chave virtual do GCC.",
+        "Armazenando ponteiros de funções em estruturas de dados (vtables personalizadas como file_operations).",
+        "Usando diretivas de pré-processador (#define) para substituir estaticamente o código em tempo de compilação.",
+        "Convertendo o código dinamicamente para instruções C++ em tempo de execução."
+      ],
+      "answerIndex": 1,
+      "explanation": "O Kernel Linux utiliza ponteiros para funções agrupados em structs (como a struct file_operations) para atuar como tabelas de métodos virtuais (vtables). Isso permite que diferentes drivers e sistemas de arquivos ofereçam suas próprias implementações concretas para as mesmas operações abstratas (read, write, open, etc.).",
+      "speakerNotes": "Vamos testar o conhecimento adquirido até aqui. Analisem as opções com atenção. Lembrem-se: o C não possui palavras-chave nativas para OO e o pré-processador apenas faz substituição de texto. O polimorfismo é dinâmico em tempo de execução e utiliza a resolução de endereços via ponteiros de função dentro das estruturas."
+    },
+    {
+      "id": 8,
+      "layout": "bullets",
+      "title": "Resumo das Boas Práticas do C Orientado a Objetos",
+      "items": [
+        "Separação de Interface e Implementação: Defina tabelas de operações abstratas em headers (.h) e implementações privadas em arquivos (.c).",
+        "Encapsulamento de Estado: Mantenha os dados membros de instâncias dentro de structs bem delimitadas.",
+        "Padrão de Propriedade e Ciclo de Vida: Implemente contadores de referência (refcounts e kref) para gerenciamento limpo de objetos.",
+        "Uso Consciente do container_of: Permita o 'downcasting' seguro entre abstrações genéricas e drivers específicos sem overhead de tempo de execução."
+      ],
+      "speakerNotes": "Para encerrarmos este módulo, estes são os 4 pilares do C Orientado a Objetos aplicados ao Kernel Linux. Essa arquitetura permitiu que o Kernel crescesse para dezenas de milhões de linhas de código mantendo um nível invejável de modularidade, desempenho e estabilidade. Podem aplicar essas mesmas ideias em sistemas embarcados, drivers ou qualquer software de alta performance que exija controle absoluto da linguagem C."
+    }
+  ]
+}

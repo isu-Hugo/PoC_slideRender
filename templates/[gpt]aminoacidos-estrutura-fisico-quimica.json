@@ -1,0 +1,201 @@
+{
+  "meta": {
+    "title": "Aminoácidos: Estrutura Físico-Química, Nomenclatura e Importância na Bioquímica",
+    "author": "Professor",
+    "course": "Bioquímica",
+    "theme": "modern-dark"
+  },
+  "slides": [
+    {
+      "id": 1,
+      "layout": "title",
+      "badge": "Módulo 1",
+      "title": "Aminoácidos",
+      "subtitle": "Estrutura físico-química, nomenclatura e importância na bioquímica",
+      "speakerNotes": "Aminoácidos são moléculas fundamentais para a vida. Eles atuam principalmente como unidades estruturais das proteínas, mas também participam de processos metabólicos, sinalização celular e síntese de outras moléculas. Nesta aula, serão estudadas a estrutura geral dos aminoácidos, suas propriedades físico-químicas, os princípios de nomenclatura e sua importância biológica."
+    },
+    {
+      "id": 2,
+      "layout": "bullets",
+      "title": "Estrutura geral dos aminoácidos",
+      "items": [
+        "A maioria dos aminoácidos presentes nas proteínas é formada por um carbono α central.",
+        "O carbono α está ligado a um grupo amino (−NH₂), um grupo carboxila (−COOH), um hidrogênio e uma cadeia lateral R.",
+        "A cadeia lateral R determina grande parte das propriedades químicas de cada aminoácido.",
+        "Em solução aquosa, os grupos amino e carboxila podem sofrer ionização."
+      ],
+      "speakerNotes": "A estrutura básica pode ser representada como NH₂−CH(R)−COOH. O carbono α é chamado de alfa porque está imediatamente adjacente ao carbono da carboxila. A exceção estrutural importante é a prolina, cuja cadeia lateral se liga ao nitrogênio do grupo amino, formando uma estrutura cíclica. A cadeia R é responsável pelas diferenças entre os 20 aminoácidos proteicos mais comuns."
+    },
+    {
+      "id": 3,
+      "layout": "split",
+      "title": "Grupos funcionais e cadeia lateral",
+      "left": {
+        "title": "Grupos comuns",
+        "points": [
+          "Grupo amino: −NH₂",
+          "Grupo carboxila: −COOH",
+          "H ligado ao carbono α",
+          "Carbono α como centro estrutural"
+        ]
+      },
+      "right": {
+        "title": "Grupo R",
+        "points": [
+          "Pode ser apolar, polar ou carregado",
+          "Determina propriedades de solubilidade",
+          "Influencia interações entre aminoácidos",
+          "Contribui para a estrutura tridimensional das proteínas"
+        ]
+      },
+      "speakerNotes": "Ao comparar diferentes aminoácidos, os grupos amino e carboxila são elementos recorrentes, enquanto a cadeia lateral R varia. Essa variação explica a diversidade química dos aminoácidos. Por exemplo, cadeias laterais apolares tendem a apresentar menor afinidade pela água, enquanto cadeias laterais polares ou carregadas podem estabelecer interações favoráveis com o meio aquoso."
+    },
+    {
+      "id": 4,
+      "layout": "code",
+      "title": "Representação estrutural",
+      "code": " H\n |\nH₂N — Cα — R\n |\n COOH",
+      "speakerNotes": "O esquema mostra a representação simplificada de um α-aminoácido. O carbono α está no centro da estrutura. O grupo amino e o grupo carboxila estão ligados a ele, assim como um hidrogênio e a cadeia lateral R. Essa representação ajuda a identificar rapidamente a arquitetura molecular comum aos aminoácidos proteicos."
+    },
+    {
+      "id": 5,
+      "layout": "bullets",
+      "title": "Propriedades físico-químicas",
+      "items": [
+        "Os aminoácidos apresentam comportamento ácido-base.",
+        "Em pH próximo ao fisiológico, muitos existem predominantemente como zwitterions.",
+        "A carga líquida depende do pH do meio e dos grupos ionizáveis presentes.",
+        "O ponto isoelétrico (pI) corresponde ao pH no qual a molécula apresenta carga líquida média igual a zero.",
+        "As propriedades da cadeia lateral influenciam solubilidade, interações e reatividade."
+      ],
+      "speakerNotes": "Um zwitterion possui simultaneamente uma região com carga positiva e outra com carga negativa, embora sua carga líquida possa ser zero. O estado de ionização de um aminoácido depende do pH. Em meio mais ácido, a protonação tende a aumentar; em meio mais básico, a desprotonação tende a aumentar. O ponto isoelétrico é importante para compreender propriedades como mobilidade eletroforética e solubilidade."
+    },
+    {
+      "id": 6,
+      "layout": "split",
+      "title": "Classificação das cadeias laterais",
+      "left": {
+        "title": "Apolar",
+        "points": [
+          "Predominantemente hidrofóbica",
+          "Exemplos: alanina, valina e leucina",
+          "Frequentemente encontrada no interior de proteínas globulares"
+        ]
+      },
+      "right": {
+        "title": "Polar ou carregada",
+        "points": [
+          "Pode interagir com água",
+          "Exemplos: serina, aspartato e lisina",
+          "Participa de ligações de hidrogênio e interações eletrostáticas"
+        ]
+      },
+      "speakerNotes": "Uma classificação didática divide as cadeias laterais em apolares, polares sem carga, ácidas e básicas. Essa classificação ajuda a prever como os aminoácidos se comportam em uma proteína. Em proteínas solúveis em água, resíduos apolares frequentemente ficam mais protegidos no interior, enquanto grupos polares e carregados podem ficar mais expostos ao solvente."
+    },
+    {
+      "id": 7,
+      "layout": "bullets",
+      "title": "Nomenclatura e códigos",
+      "items": [
+        "Cada aminoácido possui um nome específico, além de um código de três letras.",
+        "Também existe um código de uma letra usado em sequências proteicas.",
+        "Exemplo: alanina = Ala = A.",
+        "Exemplo: glicina = Gly = G.",
+        "A nomenclatura sistemática segue regras químicas baseadas na estrutura molecular."
+      ],
+      "speakerNotes": "Na bioquímica, os códigos de três e uma letra facilitam a representação de sequências de proteínas e peptídeos. Por exemplo, uma sequência pode ser escrita usando códigos de uma letra para economizar espaço. É importante diferenciar o nome comum do aminoácido, sua abreviação de três letras e seu código de uma letra."
+    },
+    {
+      "id": 8,
+      "layout": "quiz",
+      "title": "Verificação de aprendizagem",
+      "question": "Qual componente da estrutura geral dos aminoácidos é o principal responsável pelas diferenças entre os aminoácidos?",
+      "options": [
+        "O átomo de hidrogênio ligado ao carbono α",
+        "A cadeia lateral R",
+        "O grupo carboxila",
+        "O carbono da carboxila"
+      ],
+      "answerIndex": 1,
+      "explanation": "A cadeia lateral R varia entre os diferentes aminoácidos e determina muitas de suas propriedades físico-químicas, como polaridade, carga, hidrofobicidade e capacidade de interação.",
+      "speakerNotes": "Use esta questão para verificar se o aluno compreendeu a relação entre estrutura e diversidade dos aminoácidos. Os grupos amino e carboxila são comuns à estrutura básica, enquanto a cadeia R apresenta grande diversidade. Essa diversidade é essencial para a formação de proteínas com diferentes estruturas e funções."
+    },
+    {
+      "id": 9,
+      "layout": "split",
+      "title": "Aminoácidos e formação de proteínas",
+      "left": {
+        "title": "Peptídeos",
+        "points": [
+          "Aminoácidos podem se ligar por ligações peptídicas.",
+          "A ligação ocorre entre grupos carboxila e amino.",
+          "A formação envolve perda de uma molécula de água."
+        ]
+      },
+      "right": {
+        "title": "Proteínas",
+        "points": [
+          "Longas cadeias de aminoácidos podem formar proteínas.",
+          "A sequência dos aminoácidos influencia o dobramento.",
+          "A estrutura tridimensional está relacionada à função biológica."
+        ]
+      },
+      "speakerNotes": "A ligação peptídica conecta o grupo carboxila de um aminoácido ao grupo amino de outro. O processo é acompanhado pela eliminação de água. Uma cadeia contendo poucos aminoácidos pode ser chamada de peptídeo, enquanto cadeias maiores podem constituir proteínas, embora a distinção dependa do contexto e do critério utilizado."
+    },
+    {
+      "id": 10,
+      "layout": "code",
+      "title": "Formação da ligação peptídica",
+      "code": "Aminoácido 1: —COOH\n +\nAminoácido 2: H₂N—\n ↓\n —CO—NH— + H₂O\n ligação peptídica",
+      "speakerNotes": "A ligação peptídica é uma ligação covalente formada entre o carbono carbonílico do grupo carboxila de um aminoácido e o nitrogênio do grupo amino de outro. Durante a reação, ocorre a eliminação de água. A cadeia resultante apresenta uma direção química, com uma extremidade amino, chamada N-terminal, e uma extremidade carboxila, chamada C-terminal."
+    },
+    {
+      "id": 11,
+      "layout": "bullets",
+      "title": "Importância biológica",
+      "items": [
+        "São os componentes fundamentais das proteínas.",
+        "Participam de enzimas, receptores, transportadores e estruturas celulares.",
+        "Podem atuar como precursores de hormônios, neurotransmissores e outras moléculas.",
+        "Participam de vias metabólicas e do equilíbrio do nitrogênio.",
+        "Contribuem para a manutenção e renovação dos tecidos."
+      ],
+      "speakerNotes": "A importância dos aminoácidos vai além da construção de proteínas. Alguns são precursores de moléculas biologicamente ativas. Além disso, aminoácidos participam de processos metabólicos relacionados à produção de energia, transporte e utilização de nitrogênio. Por isso, compreender sua química é essencial para estudar metabolismo e fisiologia."
+    },
+    {
+      "id": 12,
+      "layout": "quote",
+      "title": "Ideia central",
+      "quote": "A diversidade das cadeias laterais dos aminoácidos permite a construção de proteínas com estruturas e funções altamente variadas.",
+      "speakerNotes": "A frase resume uma das ideias fundamentais da aula. As proteínas dependem da diversidade química dos aminoácidos. Diferentes propriedades das cadeias laterais permitem interações hidrofóbicas, ligações de hidrogênio, interações eletrostáticas e outras forças que contribuem para o dobramento e funcionamento das proteínas."
+    },
+    {
+      "id": 13,
+      "layout": "quiz",
+      "title": "Desafio final",
+      "question": "O que melhor descreve um zwitterion?",
+      "options": [
+        "Uma molécula que possui apenas cargas positivas",
+        "Uma molécula que não possui nenhum grupo ionizável",
+        "Uma molécula que apresenta cargas positivas e negativas em grupos diferentes",
+        "Uma molécula formada exclusivamente por ligações peptídicas"
+      ],
+      "answerIndex": 2,
+      "explanation": "Um zwitterion apresenta simultaneamente regiões com carga positiva e negativa na mesma molécula. Aminoácidos podem assumir essa forma em determinadas condições de pH.",
+      "speakerNotes": "A questão avalia a compreensão do comportamento ácido-base dos aminoácidos. Em uma forma zwitteriônica, o grupo amino pode estar protonado e apresentar carga positiva, enquanto o grupo carboxila pode estar desprotonado e apresentar carga negativa. A predominância dessa forma depende das condições do meio."
+    },
+    {
+      "id": 14,
+      "layout": "bullets",
+      "title": "Resumo para revisão",
+      "items": [
+        "A estrutura básica inclui carbono α, grupo amino, grupo carboxila, hidrogênio e cadeia R.",
+        "A cadeia lateral determina muitas propriedades específicas de cada aminoácido.",
+        "Aminoácidos apresentam comportamento ácido-base e podem existir como zwitterions.",
+        "Aminoácidos podem formar peptídeos e proteínas por ligações peptídicas.",
+        "Sua importância inclui funções estruturais, catalíticas e metabólicas."
+      ],
+      "speakerNotes": "Para revisar, memorize primeiro a estrutura geral e a função da cadeia lateral. Em seguida, associe o comportamento ácido-base à ionização dos grupos funcionais. Por fim, relacione a ligação peptídica à formação de peptídeos e proteínas. Uma boa estratégia de estudo é desenhar a estrutura geral de um aminoácido e classificar diferentes cadeias laterais segundo polaridade e carga."
+    }
+  ]
+}

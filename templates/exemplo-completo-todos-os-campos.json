@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "title": "Arquitetura Web Moderna & Microsserviços",
+    "author": "Prof. Dra. Camila Albuquerque",
+    "course": "Sistemas Distribuídos & Engenharia de Software",
+    "theme": "emerald",
+    "date": "2026-09-27"
+  },
+  "slides": [
+    {
+      "id": 1,
+      "layout": "title",
+      "badge": "Módulo Avançado • Aula 04",
+      "title": "Do Monólito aos Microsserviços",
+      "subtitle": "Padrões de escalabilidade, resiliência e comunicação assíncrona em aplicações modernas",
+      "speakerNotes": "Abertura da aula: Contextualizar que a escolha entre monólito e microsserviços não é sobre 'certo ou errado', mas sobre o estágio de maturidade do produto e da equipe. Dar 3 minutos para introduzir o tema."
+    },
+    {
+      "id": 2,
+      "layout": "bullets",
+      "title": "Fundamentos da Abordagem Distribuída",
+      "subtitle": "Três pilares cruciais que sustentam uma arquitetura de serviços independentes:",
+      "items": [
+        "Desacoplamento de Domínio: Cada serviço resolve um problema específico de negócio (Bounded Context).",
+        "Bancos de Dados Isolados: Cada microsserviço gerencia seu próprio banco para garantir autonomia de schema.",
+        "Comunicação Orientada a Eventos: Uso de mensageria (Kafka/RabbitMQ) para tolerância a falhas sem chamadas síncronas bloqueantes.",
+        "Observabilidade Unificada: Tracing distribuído, métricas centralizadas e agregação de logs em tempo real."
+      ],
+      "speakerNotes": "Ponto de atenção no slide 2: Ressaltar por que bancos de dados compartilhados destroem os benefícios de microsserviços. Perguntar à turma se alguém já enfrentou bloqueios de migração em bancos monolíticos."
+    },
+    {
+      "id": 3,
+      "layout": "split",
+      "title": "Comparativo Direto: Monólito vs Microsserviços",
+      "left": {
+        "title": "🏛️ Monólito Modular",
+        "tag": "Simplicidade & Coesão",
+        "points": [
+          "Deploy em artefato único: pipeline simples e rápido",
+          "Transações ACID nativas no mesmo banco de dados",
+          "Chamadas diretas de função em memória com latência zero",
+          "Excelente para MVPs e equipes enxutas (até ~15 desenvolvedores)"
+        ]
+      },
+      "right": {
+        "title": "⚡ Microsserviços",
+        "tag": "Escala & Autonomia",
+        "points": [
+          "Deploy e escalabilidade elástica independente por serviço",
+          "Poliglota: liberdade para usar a linguagem ideal em cada contexto",
+          "Falhas isoladas: a queda do serviço de relatórios não derruba o checkout",
+          "Exige maturidade em DevOps, tracing distribuído e consistência eventual"
+        ]
+      },
+      "speakerNotes": "Notas para debate: Monólitos bem construídos (modular monolith) são excelentes! Microsserviços trazem complexidade operacional pesada que só compensa quando a organização cresce."
+    },
+    {
+      "id": 4,
+      "layout": "code",
+      "title": "Implementação: Resiliência com Circuit Breaker",
+      "subtitle": "Evitando falhas em cascata quando um serviço parceiro fica instável:",
+      "language": "javascript",
+      "code": "async function chamarServicoPagamento(carrinho) {\n  const circuitBreaker = new CircuitBreaker({\n    timeout: 3000,       // Falha se demorar mais de 3s\n    errorThreshold: 50,  // Abre o circuito se 50% das requisições falharem\n    resetTimeout: 10000  // Tenta reconectar após 10s\n  });\n\n  return await circuitBreaker.execute(async () => {\n    return await http.post('/api/v1/pagamentos', carrinho);\n  });\n}",
+      "explanation": "O padrão Circuit Breaker impede que dezenas de conexões fiquem travadas esperando um serviço que caiu, preservando os recursos da sua API.",
+      "speakerNotes": "Explicar a analogia do disjuntor elétrico residencial: quando há sobrecarga, o disjuntor cai para não queimar os aparelhos da casa inteira."
+    },
+    {
+      "id": 5,
+      "layout": "quiz",
+      "question": "O que caracteriza o princípio 'Database per Service' em uma arquitetura de microsserviços?",
+      "options": [
+        "Todos os microsserviços devem usar obrigatoriamente bancos relacionais SQL idênticos",
+        "Cada serviço possui seu próprio banco de dados e outros serviços só acessam esses dados via API autorizada",
+        "O banco de dados é duplicado fisicamente em cada computador dos desenvolvedores",
+        "Os serviços compartilham as mesmas tabelas para evitar cópias de dados"
+      ],
+      "answerIndex": 1,
+      "explanation": "Correto! O isolamento de banco de dados é a regra de ouro para garantir que um serviço possa evoluir seu modelo de dados sem quebrar outros serviços da empresa.",
+      "speakerNotes": "Interação com a turma: Dar 45 segundos para responderem. Destacar que tentar usar microsserviços com um banco de dados monolítico único cria o pior dos dois mundos."
+    },
+    {
+      "id": 6,
+      "layout": "quote",
+      "quote": "A primeira regra dos sistemas distribuídos é não distribuir até que você seja absolutamente forçado a isso pela escala organizacional.",
+      "author": "Martin Fowler",
+      "role": "Chief Scientist na ThoughtWorks & Autor de 'Patterns of Enterprise Application Architecture'",
+      "speakerNotes": "Fechamento reflexivo: Lembrar aos alunos que a tecnologia deve servir ao negócio e não ao entusiasmo prematuro por complexidade técnica."
+    }
+  ]
+}

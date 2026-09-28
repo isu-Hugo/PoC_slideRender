@@ -1,0 +1,182 @@
+{
+  "meta": {
+    "title": "C Orientado a Objetos no Kernel Linux",
+    "author": "Professor",
+    "course": "Sistemas Operacionais / Arquitetura de Software",
+    "theme": "modern-dark"
+  },
+  "slides": [
+    {
+      "id": 1,
+      "layout": "title",
+      "badge": "Módulo 2",
+      "title": "C Orientado a Objetos no Kernel Linux",
+      "subtitle": "Como o kernel simula encapsulamento, herança e polimorfismo sem nunca sair da linguagem C",
+      "speakerNotes": "Abertura da aula. Provocar os alunos com a pergunta: 'C tem classes? Tem herança? Tem polimorfismo?' A resposta oficial da linguagem é não, mas na prática o kernel Linux implementa esses três pilares da orientação a objetos usando apenas structs, ponteiros de função e macros. Explicar que essa aula vai desmontar essa 'mágica' peça por peça, mostrando que POO é um paradigma de organização de ideias, não uma exigência de sintaxe da linguagem."
+    },
+    {
+      "id": 2,
+      "layout": "bullets",
+      "title": "O Mito: 'C não tem objetos'",
+      "items": [
+        "C não possui classes, nem construtores/destrutores nativos",
+        "C não possui a palavra-chave 'virtual' ou suporte nativo a polimorfismo",
+        "Mas objeto, na prática, é apenas: dados + comportamento agrupados",
+        "Structs agrupam dados; ponteiros de função agrupam comportamento",
+        "O kernel Linux prova que os PRINCÍPIOS de POO independem da sintaxe da linguagem"
+      ],
+      "speakerNotes": "Deixar claro a diferença entre paradigma (conjunto de princípios de design: encapsulamento, herança, polimorfismo) e sintaxe de linguagem (palavras-chave como 'class', 'virtual', 'extends'). C++ e Java dão suporte sintático direto a esses princípios; C exige que o programador implemente manualmente essas convenções usando as ferramentas que já possui: structs, ponteiros e macros de pré-processador."
+    },
+    {
+      "id": 3,
+      "layout": "split",
+      "title": "Os 3 Pilares: Conceito vs. Implementação em C",
+      "left": {
+        "title": "Em linguagens POO (Java/C++)",
+        "points": [
+          "Encapsulamento: private/public + classes",
+          "Herança: extends / : public Base",
+          "Polimorfismo: métodos virtuais + override",
+          "Suporte verificado pelo compilador"
+        ]
+      },
+      "right": {
+        "title": "No Kernel Linux (C puro)",
+        "points": [
+          "Encapsulamento: convenção + opaque structs",
+          "Herança: composição de structs (struct embutida)",
+          "Polimorfismo: ponteiros de função (vtables manuais)",
+          "Suporte garantido por disciplina e convenção"
+        ]
+      },
+      "speakerNotes": "Este slide é o mapa mental de toda a aula. Cada pilar da POO clássica tem um equivalente estrutural no kernel. A diferença crucial: em linguagens POO o compilador impõe as regras; em C, é a disciplina da equipe de desenvolvimento e as convenções de código (documentadas, por exemplo, em Documentation/ do kernel) que garantem que tudo funcione como esperado."
+    },
+    {
+      "id": 4,
+      "layout": "code",
+      "title": "Polimorfismo: Ponteiros de Função como 'Métodos Virtuais'",
+      "code": "// Definição de uma 'interface' de operações de arquivo\nstruct file_operations {\n    ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);\n    ssize_t (*write)(struct file *, const char __user *, size_t, loff_t *);\n    int     (*open) (struct inode *, struct file *);\n    int     (*release)(struct inode *, struct file *);\n    // ... dezenas de outras 'operações virtuais'\n};\n\n// Cada driver implementa sua própria versão (equivalente a 'override')\nstatic const struct file_operations meu_driver_fops = {\n    .read    = meu_driver_read,\n    .write   = meu_driver_write,\n    .open    = meu_driver_open,\n    .release = meu_driver_release,\n};",
+      "language": "c",
+      "speakerNotes": "Este é o exemplo clássico de polimorfismo em C: a struct file_operations funciona como uma 'vtable' manual — uma tabela de ponteiros para funções que qualquer driver pode preencher com sua própria implementação. Quando o kernel chama file->f_op->read(...), ele está fazendo, na prática, uma chamada polimórfica: o mesmo código genérico (VFS - Virtual File System) chama comportamentos completamente diferentes dependendo de qual driver preencheu essa tabela. É exatamente o que um compilador C++ faz internamente com métodos virtuais, só que aqui é feito manualmente e explicitamente."
+    },
+    {
+      "id": 5,
+      "layout": "bullets",
+      "title": "O VFS (Virtual File System): Polimorfismo em Escala Real",
+      "items": [
+        "VFS é uma camada de abstração sobre ext4, XFS, NFS, FAT32, etc.",
+        "Código genérico do VFS não sabe (nem precisa saber) qual sistema de arquivos está por trás",
+        "Cada sistema de arquivos fornece sua própria struct file_operations e inode_operations",
+        "Chamar read() em qualquer arquivo dispara a implementação correta automaticamente",
+        "É o equivalente prático de uma classe abstrata com métodos virtuais em C++/Java"
+      ],
+      "speakerNotes": "Usar o VFS como o exemplo mais rico e didático de polimorfismo em C. Comparar diretamente: em Java, teríamos uma interface FileSystem com métodos read()/write(), implementada por classes Ext4FileSystem, NfsFileSystem, etc. No kernel, o mesmo efeito é obtido preenchendo tabelas de ponteiros de função. O código chamador (VFS) é idêntico não importa qual sistema de arquivos está sendo usado — essa é a essência do polimorfismo: mesmo código, comportamentos diferentes."
+    },
+    {
+      "id": 6,
+      "layout": "code",
+      "title": "Herança: Composição com 'container_of'",
+      "code": "// A 'classe base' (dados comuns a todo dispositivo)\nstruct device {\n    const char *name;\n    struct device *parent;\n    // ...\n};\n\n// A 'classe derivada' EMBUTE a base dentro de si\nstruct usb_device {\n    struct device dev;   // <- herança por composição\n    int devnum;\n    // campos específicos de USB\n};\n\n// Macro que faz o 'upcast' inverso: de membro para struct completa\n#define container_of(ptr, type, member) \\\n    ((type *)((char *)(ptr) - offsetof(type, member)))\n\n// Uso: dado um struct device*, volta para o struct usb_device* original\nstruct usb_device *udev = container_of(dev_ptr, struct usb_device, dev);",
+      "language": "c",
+      "speakerNotes": "Explicar que C não tem herança de verdade, mas simula perfeitamente o efeito através de composição: uma struct 'derivada' inclui a struct 'base' como seu PRIMEIRO campo (ou em qualquer posição). Isso permite tratar um ponteiro para usb_device como se fosse um ponteiro para device (upcast trivial, apenas reinterpretando o endereço). A mágica reversa (downcast) é feita pela macro container_of, extremamente usada em todo o kernel, que calcula o endereço da struct completa a partir do endereço de um de seus campos, usando offsetof. É crucial que os alunos entendam essa macro, pois ela aparece centenas de vezes no código-fonte do kernel."
+    },
+    {
+      "id": 7,
+      "layout": "bullets",
+      "title": "Encapsulamento: Opacidade e Convenção",
+      "items": [
+        "C não tem 'private', mas o kernel usa opaque structs (structs incompletas em headers)",
+        "Módulos externos só enxergam um ponteiro (struct foo *), nunca os campos internos",
+        "Acesso aos dados é feito exclusivamente por funções fornecidas pelo módulo dono da struct",
+        "Convenção de nomes (ex: prefixo '_' ou comentários) sinaliza campos 'internos'",
+        "kernel usa 'EXPORT_SYMBOL' para expor deliberadamente apenas a API pública de um módulo"
+      ],
+      "speakerNotes": "Explicar o padrão de 'opaque pointer' (ponteiro opaco): um header pode declarar 'struct meu_tipo;' sem definir seus campos, forçando quem usa o módulo a manipular apenas ponteiros e chamar funções específicas para operar sobre eles — nunca acessar campos diretamente porque nem sabe quais são. Isso é encapsulamento real, imposto pela própria arquitetura de compilação em C (separação .h/.c), e não apenas por convenção de nomenclatura como muitos acreditam."
+    },
+    {
+      "id": 8,
+      "layout": "split",
+      "title": "kobject: O 'Object System' do Kernel",
+      "left": {
+        "title": "O que é kobject?",
+        "points": [
+          "Estrutura genérica embutida em milhares de outras structs do kernel",
+          "Fornece contagem de referências (reference counting)",
+          "Integra automaticamente com sysfs (/sys)",
+          "Base para o modelo de driver unificado do Linux"
+        ]
+      },
+      "right": {
+        "title": "Funcionalidade tipo 'classe base universal'",
+        "points": [
+          "kobject_init() / kobject_put() = construtor/destrutor",
+          "kref embutido = contagem automática de vida útil do objeto",
+          "ktype define 'métodos virtuais' (release, sysfs_ops)",
+          "Análogo a uma classe Object da qual tudo herda"
+        ]
+      },
+      "speakerNotes": "kobject é provavelmente o exemplo mais sofisticado de POO em C dentro do kernel. Ele funciona quase como uma 'superclasse universal', similar ao Object em Java: qualquer struct que embuta um kobject ganha automaticamente gerenciamento de ciclo de vida via contagem de referências (kref), integração com o sistema de arquivos virtual sysfs, e um mecanismo de 'liberação polimórfica' através do campo ktype->release, que é um ponteiro de função chamado quando o objeto não tem mais referências. É essencialmente um sistema de garbage collection cooperativo e manual."
+    },
+    {
+      "id": 9,
+      "layout": "quote",
+      "quote": "Orientação a objetos é uma forma de pensar sobre software, não uma característica exclusiva de uma linguagem de programação.",
+      "author": "Princípio de Design de Software",
+      "speakerNotes": "Usar essa citação como ponto de reflexão central da aula. Perguntar aos alunos: quais outras linguagens ou sistemas eles conhecem que simulam POO sem suporte nativo? Exemplos possíveis: GTK (usa GObject, sistema de objetos em C puro para toda a biblioteca gráfica), o próprio kernel Windows NT (também escrito majoritariamente em C com padrões similares). Reforçar que entender esses padrões manuais é excelente treino para compreender profundamente o que compiladores C++/Java fazem 'escondido' por trás de suas palavras-chave."
+    },
+    {
+      "id": 10,
+      "layout": "bullets",
+      "title": "Trade-offs: Por que não usar C++ no kernel então?",
+      "items": [
+        "Performance previsível: sem overhead de exceções, RTTI ou vtables automáticas ocultas",
+        "Controle total sobre layout de memória (crítico para hardware e ABI estável)",
+        "Portabilidade: compiladores C são universais em todas as arquiteturas suportadas",
+        "Simplicidade de compilação e depuração em ambiente de baixo nível (sem runtime complexo)",
+        "Linus Torvalds defende publicamente que C++ adicionaria complexidade sem benefício real no kernel"
+      ],
+      "speakerNotes": "Momento importante para discussão crítica. Explicar que a decisão de usar C não é por limitação técnica, mas por escolha de engenharia: no espaço do kernel, previsibilidade de performance, controle explícito de memória e compatibilidade binária são mais valiosos do que a conveniência sintática de C++. Mencionar (sem necessidade de citar textualmente) que essa é uma discussão histórica bem documentada nas mailing lists do kernel, onde Linus Torvalds argumentou contra a adoção de C++ por décadas."
+    },
+    {
+      "id": 11,
+      "layout": "quiz",
+      "question": "No kernel Linux, qual mecanismo é usado para implementar polimorfismo (mesmo código chamando comportamentos diferentes)?",
+      "options": [
+        "Herança múltipla de structs usando a palavra-chave 'extends'",
+        "Tabelas de ponteiros de função (como struct file_operations) preenchidas por cada implementação",
+        "Templates genéricos resolvidos em tempo de compilação",
+        "Reflexão (reflection) para descobrir o tipo em tempo de execução"
+      ],
+      "answerIndex": 1,
+      "explanation": "O kernel implementa polimorfismo através de structs contendo ponteiros de função (como file_operations), que funcionam como 'vtables' manuais. Cada driver ou subsistema preenche essa tabela com suas próprias funções, permitindo que código genérico (como o VFS) chame comportamentos diferentes sem saber a implementação concreta por trás.",
+      "speakerNotes": "Retomar o exemplo do slide 4 e 5 caso os alunos errem. Reforçar que C não tem templates nem reflection nativos — essas são características de outras linguagens (C++ e Java, respectivamente) e não se aplicam ao kernel."
+    },
+    {
+      "id": 12,
+      "layout": "quiz",
+      "question": "Qual é a função da macro 'container_of' no kernel Linux?",
+      "options": [
+        "Alocar dinamicamente uma nova struct na memória (equivalente a 'new')",
+        "Verificar se um ponteiro é nulo antes de usá-lo",
+        "Obter o endereço da struct 'derivada' completa a partir do endereço de um de seus campos embutidos",
+        "Contar quantas referências ativas existem para um objeto"
+      ],
+      "answerIndex": 2,
+      "explanation": "container_of realiza o equivalente a um 'downcast': dado um ponteiro para um campo embutido (como struct device dentro de struct usb_device), ela calcula o endereço de início da struct completa usando offsetof. Isso é essencial no padrão de herança por composição usado extensivamente no kernel.",
+      "speakerNotes": "Voltar ao slide 6 se necessário. Destacar que essa macro é uma das mais reutilizadas em todo o código-fonte do kernel, aparecendo em praticamente todo subsistema que implementa algum tipo de hierarquia de dados."
+    },
+    {
+      "id": 13,
+      "layout": "bullets",
+      "title": "Resumo: A 'POO Manual' do Kernel Linux",
+      "items": [
+        "Encapsulamento: opaque structs + separação header/implementação",
+        "Herança: composição de structs (struct base embutida) + container_of",
+        "Polimorfismo: tabelas de ponteiros de função (vtables manuais)",
+        "kobject: sistema de 'objeto universal' com contagem de referências e ciclo de vida",
+        "Conclusão: paradigmas de design transcendem sintaxe — disciplina de engenharia > recursos de linguagem"
+      ],
+      "speakerNotes": "Fechamento da aula. Reforçar a mensagem central: o kernel Linux é uma prova viva de que orientação a objetos é, antes de tudo, uma disciplina de organização de código — não uma feature exclusiva de linguagens modernas. Sugerir como exercício prático: os alunos explorarem o código-fonte do kernel (disponível em kernel.org ou github.com/torvalds/linux) e localizarem exemplos reais de struct file_operations, kobject e container_of em drivers reais, como forma de consolidar o aprendizado."
+    }
+  ]
+}

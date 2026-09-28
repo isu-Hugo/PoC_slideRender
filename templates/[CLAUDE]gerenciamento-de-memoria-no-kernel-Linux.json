@@ -1,0 +1,187 @@
+{
+  "meta": {
+    "title": "Gerenciamento de Memória no Kernel Linux e MMU",
+    "author": "Professor",
+    "course": "Sistemas Operacionais",
+    "theme": "modern-dark"
+  },
+  "slides": [
+    {
+      "id": 1,
+      "layout": "title",
+      "badge": "Módulo 1",
+      "title": "Gerenciamento de Memória no Kernel Linux e MMU",
+      "subtitle": "Da memória física à memória virtual: como o Linux organiza e protege o espaço de endereçamento",
+      "speakerNotes": "Apresentação de abertura. Contextualizar que o gerenciamento de memória é um dos subsistemas mais críticos do kernel, responsável por alocar, proteger e mapear memória entre processos e o hardware. Explicar que a aula cobrirá desde os conceitos de MMU (Memory Management Unit) até estruturas internas do kernel como page tables, buddy system e slab allocator. Pedir aos alunos que revisem previamente os conceitos de espaço de endereçamento virtual."
+    },
+    {
+      "id": 2,
+      "layout": "bullets",
+      "title": "Por que precisamos de gerência de memória?",
+      "items": [
+        "Múltiplos processos competem pela mesma memória física",
+        "Necessidade de isolamento e proteção entre processos",
+        "Ilusão de memória contínua e privada (memória virtual)",
+        "Uso eficiente de RAM limitada com técnicas de paginação",
+        "Suporte a multiprogramação e memória além da RAM física (swap)"
+      ],
+      "speakerNotes": "Explicar que sem gerência de memória, um processo poderia acessar e corromper dados de outro processo ou até do próprio kernel. Introduzir a ideia de que o SO cria uma abstração: cada processo 'acha' que tem toda a memória para si. Mencionar que isso é feito através de memória virtual, que depende diretamente do hardware MMU. Fazer link com aulas anteriores sobre processos e escalonamento."
+    },
+    {
+      "id": 3,
+      "layout": "bullets",
+      "title": "O que é a MMU (Memory Management Unit)?",
+      "items": [
+        "Componente de hardware dentro do processador (ou próximo a ele)",
+        "Traduz endereços virtuais (usados pelos processos) em endereços físicos (RAM real)",
+        "Consulta as tabelas de páginas (page tables) mantidas pelo kernel",
+        "Usa a TLB (Translation Lookaside Buffer) como cache de traduções recentes",
+        "Gera exceções de página (page faults) quando a tradução falha"
+      ],
+      "speakerNotes": "Enfatizar que a MMU é hardware, não software — o kernel apenas configura as estruturas de dados (page tables) que a MMU consulta. Explicar o fluxo: CPU gera endereço virtual -> MMU verifica TLB -> se não encontrar, percorre a page table (page walk) -> se página não estiver mapeada, gera page fault -> kernel trata a falha. Essa é a base para as próximas discussões sobre paginação."
+    },
+    {
+      "id": 4,
+      "layout": "split",
+      "title": "Memória Virtual vs. Memória Física",
+      "left": {
+        "title": "Memória Virtual",
+        "points": [
+          "Espaço de endereçamento visto por cada processo",
+          "Contígua e privada do ponto de vista do processo",
+          "Dividida em páginas de tamanho fixo (ex: 4KB)",
+          "Permite isolamento entre processos"
+        ]
+      },
+      "right": {
+        "title": "Memória Física",
+        "points": [
+          "RAM real instalada na máquina",
+          "Dividida em quadros (frames) do mesmo tamanho das páginas",
+          "Compartilhada entre todos os processos e o kernel",
+          "Mapeada de forma não contígua via page tables"
+        ]
+      },
+      "speakerNotes": "Usar um diagrama mental: cada processo enxerga endereços de 0 a um valor máximo (ex: 0xFFFFFFFF em 32 bits), mas esses endereços não correspondem diretamente à RAM. O kernel mantém uma tabela de páginas por processo que faz o mapeamento página virtual -> quadro físico. Destacar que páginas de processos diferentes podem apontar para quadros físicos distantes ou até para o mesmo quadro (memória compartilhada, como bibliotecas .so)."
+    },
+    {
+      "id": 5,
+      "layout": "bullets",
+      "title": "Estrutura das Page Tables no Linux",
+      "items": [
+        "Linux usa page tables multiníveis (hierárquicas) para economizar memória",
+        "Em x86-64 moderno: 4 ou 5 níveis (PGD, P4D, PUD, PMD, PTE)",
+        "PGD (Page Global Directory) é o nível mais alto, aponta para os demais",
+        "PTE (Page Table Entry) é o nível final, contém o endereço físico e flags",
+        "Flags importantes: Present, Read/Write, User/Supervisor, Dirty, Accessed"
+      ],
+      "speakerNotes": "Explicar que uma tabela de página de nível único para 64 bits seria absurdamente grande, por isso o Linux usa estruturas em árvore. Cada processo tem seu próprio PGD, apontado pelo registrador CR3 (em x86) durante a troca de contexto. Detalhar rapidamente o page walk: CPU pega os bits do endereço virtual, indexa cada nível da tabela até chegar ao frame físico correspondente. Mencionar que kernels modernos suportam Huge Pages para reduzir overhead de tradução."
+    },
+    {
+      "id": 6,
+      "layout": "code",
+      "title": "Estrutura interna: struct page e struct mm_struct",
+      "code": "// Estrutura que representa uma página física no kernel\nstruct page {\n    unsigned long flags;      // status da página (dirty, locked...)\n    atomic_t _refcount;       // contador de referências\n    struct address_space *mapping;\n    // ... outros campos\n};\n\n// Estrutura que representa o espaço de memória de um processo\nstruct mm_struct {\n    struct vm_area_struct *mmap;  // lista de VMAs\n    pgd_t *pgd;                   // ponteiro para a page table global\n    unsigned long start_code, end_code;\n    unsigned long start_data, end_data;\n    unsigned long start_brk, brk; // heap\n    unsigned long start_stack;    // pilha\n};",
+      "language": "c",
+      "speakerNotes": "Mostrar que o kernel Linux representa cada quadro físico de RAM com uma struct page, usada para controle de referências e estado. Já a struct mm_struct representa todo o espaço de endereçamento virtual de um processo, incluindo o ponteiro pgd para sua tabela de páginas raiz. Explicar VMA (Virtual Memory Area) como regiões contíguas de memória virtual com permissões específicas (código, dados, heap, stack, bibliotecas mapeadas). Essas estruturas podem ser vistas em /proc/[pid]/maps."
+    },
+    {
+      "id": 7,
+      "layout": "bullets",
+      "title": "Page Fault: o que acontece quando a tradução falha?",
+      "items": [
+        "MMU não encontra mapeamento válido e gera uma exceção de page fault",
+        "CPU transfere controle para o handler de page fault do kernel",
+        "Kernel verifica se o endereço é válido (dentro de alguma VMA)",
+        "Se válido: pode ser demand paging (carregar página do disco) ou copy-on-write",
+        "Se inválido: processo recebe SIGSEGV (segmentation fault)"
+      ],
+      "speakerNotes": "Detalhar os tipos de page fault: minor fault (página já está na RAM, só precisa ser mapeada, ex: copy-on-write) e major fault (página precisa ser lida do disco/swap, muito mais custosa). Explicar que essa é a base de mecanismos como fork() com COW (copy-on-write), onde páginas só são realmente copiadas quando um dos processos tenta escrever nelas."
+    },
+    {
+      "id": 8,
+      "layout": "split",
+      "title": "Alocadores de Memória no Kernel",
+      "left": {
+        "title": "Buddy System",
+        "points": [
+          "Gerencia memória física em blocos de potências de 2",
+          "Evita fragmentação externa combinando blocos livres adjacentes",
+          "Unidade básica: página (geralmente 4KB)",
+          "Usado para alocações de páginas inteiras (get_free_pages)"
+        ]
+      },
+      "right": {
+        "title": "Slab / SLUB Allocator",
+        "points": [
+          "Construído sobre o Buddy System",
+          "Otimizado para alocações pequenas e frequentes (estruturas do kernel)",
+          "Mantém caches de objetos do mesmo tipo pré-alocados",
+          "SLUB é o alocador padrão em kernels Linux modernos"
+        ]
+      },
+      "speakerNotes": "Explicar que o Buddy System resolve o problema de fragmentação externa dividindo e combinando blocos de tamanho 2^n páginas. Já o Slab Allocator resolve o problema de alocar pequenas estruturas (como task_struct, inode) sem desperdiçar memória, mantendo pools de objetos pré-inicializados. Comentar brevemente a evolução histórica: SLAB -> SLUB (mais simples e escalável) -> SLOB (para sistemas embarcados)."
+    },
+    {
+      "id": 9,
+      "layout": "quote",
+      "quote": "Uma boa gerência de memória é invisível: o programador nunca deveria precisar pensar em endereços físicos.",
+      "author": "Princípio de projeto de sistemas operacionais",
+      "speakerNotes": "Usar essa citação para reforçar o objetivo final de todo esse mecanismo: abstrair a complexidade do hardware. Perguntar aos alunos: o que aconteceria se cada programa precisasse gerenciar manualmente endereços físicos de RAM? Discutir brevemente sistemas embarcados sem MMU (ex: uClinux) como contraponto, onde essa abstração não existe totalmente."
+    },
+    {
+      "id": 10,
+      "layout": "bullets",
+      "title": "Swap e Memória Virtual em Disco",
+      "items": [
+        "Quando a RAM está cheia, páginas pouco usadas podem ser movidas para o swap",
+        "Swap pode ser uma partição dedicada ou um arquivo de swap",
+        "Algoritmos de substituição de página decidem quais páginas remover (ex: aproximação de LRU)",
+        "kswapd é a thread do kernel responsável por liberar memória de forma assíncrona",
+        "Uso excessivo de swap causa 'thrashing' e degradação de performance"
+      ],
+      "speakerNotes": "Explicar o papel do kswapd como daemon do kernel que roda em segundo plano, monitorando os níveis de memória livre e movendo páginas inativas para o swap antes que a memória se esgote completamente. Comentar sobre a métrica 'swappiness' no Linux, que controla a agressividade do sistema em usar swap. Alertar sobre thrashing: quando o sistema gasta mais tempo trocando páginas do que executando processos."
+    },
+    {
+      "id": 11,
+      "layout": "quiz",
+      "question": "Qual é a principal função da MMU (Memory Management Unit) em um sistema com memória virtual?",
+      "options": [
+        "Executar instruções aritméticas em paralelo com a CPU",
+        "Traduzir endereços virtuais em endereços físicos usando as page tables",
+        "Armazenar permanentemente os dados dos processos em disco",
+        "Escalonar quais processos serão executados pela CPU"
+      ],
+      "answerIndex": 1,
+      "explanation": "A MMU é um componente de hardware cuja função central é traduzir endereços virtuais gerados pela CPU em endereços físicos de RAM, consultando as tabelas de páginas mantidas pelo sistema operacional e utilizando a TLB como cache para acelerar esse processo.",
+      "speakerNotes": "Slide de fixação. Se os alunos errarem, retomar o slide 3 sobre a definição da MMU. Reforçar a diferença entre o papel do hardware (MMU faz a tradução) e do software (kernel mantém as tabelas de páginas que a MMU consulta)."
+    },
+    {
+      "id": 12,
+      "layout": "quiz",
+      "question": "O que caracteriza um 'minor page fault'?",
+      "options": [
+        "O processo tentou acessar um endereço fora de qualquer VMA válida",
+        "A página solicitada precisa ser lida do disco, causando alta latência",
+        "A página já está presente na memória física, mas ainda não está mapeada na tabela do processo",
+        "O sistema ficou sem memória física disponível e travou"
+      ],
+      "answerIndex": 2,
+      "explanation": "Um minor page fault ocorre quando a página já está carregada na RAM (por exemplo, compartilhada com outro processo ou já usada antes), mas ainda não foi mapeada na tabela de páginas do processo atual. Isso é resolvido rapidamente pelo kernel, sem acesso a disco, ao contrário do major page fault.",
+      "speakerNotes": "Usar este slide para diferenciar minor fault de major fault e de segmentation fault (acesso inválido). Conectar com o mecanismo de copy-on-write discutido no slide 7, que é um exemplo clássico de minor page fault."
+    },
+    {
+      "id": 13,
+      "layout": "bullets",
+      "title": "Resumo e Conexões Importantes",
+      "items": [
+        "MMU (hardware) + Page Tables (mantidas pelo kernel) = memória virtual funcional",
+        "struct mm_struct e VMAs organizam o espaço de endereçamento de cada processo",
+        "Buddy System gerencia páginas físicas; Slab/SLUB gerencia objetos pequenos do kernel",
+        "Page faults são o mecanismo central de comunicação entre hardware e kernel",
+        "Swap estende a capacidade de memória, mas com custo de desempenho"
+      ],
+      "speakerNotes": "Fechamento da aula. Revisar o fluxo completo: processo acessa endereço virtual -> MMU tenta traduzir -> se necessário, kernel intervém via page fault -> alocadores (buddy/slab) fornecem memória física -> páginas podem ir para swap sob pressão de memória. Sugerir como próximo passo prático: explorar /proc/[pid]/maps, /proc/meminfo e ferramentas como 'vmstat' e 'free' para observar esses conceitos na prática em um sistema Linux real."
+    }
+  ]
+}
